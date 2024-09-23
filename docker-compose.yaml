@@ -1,0 +1,38 @@
+version: '3.12'
+
+services:
+  postgres-db:
+    restart: always
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  web:
+    restart: always
+    build:
+      context: .
+    container_name: cinema
+    command: make migrations
+    depends_on:
+      - postgres-db
+    env_file: .env
+    volumes:
+      - static_volume:/usr/src/vpnservice/static/
+      - media_volume:/usr/src/vpnservice/media/
+
+  nginx:
+    restart: always
+    build:
+      context: ./docker/nginx/.
+    container_name: nginx
+    volumes:
+      - static_volume:/usr/src/vpnservice/static/
+      - media_volume:/usr/src/vpnservice/media/
+    ports:
+      - '80:80'
+volumes:
+  static_volume:
+  media_volume:
